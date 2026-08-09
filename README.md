@@ -8,6 +8,8 @@ Focusrite's **Mix Control** (the only control app for 1st-gen Scarletts) was **d
 
 This project reverse-engineers the 6i6 1st-gen USB control protocol on macOS and gives you back full offline control of your interface.
 
+![Scarlett 6i6 Mixer](docs/screenshot.png)
+
 ## Features
 
 - **Matrix mixer / routing** — every input (analog, S/PDIF, ADAT) to every output, with gain in dB
