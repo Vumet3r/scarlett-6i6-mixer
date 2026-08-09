@@ -1,0 +1,15 @@
+# Build artifacts
+build/
+.build/
+dist/
+
+# Reference material (upstream sources, not part of this repo)
+alsa-scarlett-gui/
+scarlett-gen2/
+fcp.c
+mixer_scarlett.c
+mixer_scarlett.h
+
+# macOS noise
+.DS_Store
+*.log
