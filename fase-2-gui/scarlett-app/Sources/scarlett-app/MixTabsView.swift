@@ -12,7 +12,7 @@ struct MixTabsView: View {
                     Button("Mix \(mixNum)") { vm.activeMix = i }
                         .font(ScarlettUI.title(10, isActive ? .semibold : .regular))
                         .buttonStyle(.bordered)
-                        .tint(isActive ? ScarlettUI.accent : .gray.opacity(0.5))
+                        .tint(isActive ? ScarlettUI.accent : Color.primary.opacity(0.55))
                         .controlSize(.small)
                 }
             }

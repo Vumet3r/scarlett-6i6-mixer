@@ -58,14 +58,14 @@ struct ChannelStripView: View {
     private var preampSection: some View {
         VStack(spacing: 3) {
             HStack(spacing: 3) {
-                ToggleButton(label: index < 2 ? "Line" : "Lo", isOn: isLo, height: 18) {
+                ToggleButton(label: index < 2 ? "Line" : "Lo", isOn: isLo, offColor: ScarlettUI.labelOnStrip, height: 18) {
                     vm.setGain(ch: index + 1, "lo")
                 }
-                ToggleButton(label: index < 2 ? "Inst" : "Hi", isOn: isHi, height: 18) {
+                ToggleButton(label: index < 2 ? "Inst" : "Hi", isOn: isHi, offColor: ScarlettUI.labelOnStrip, height: 18) {
                     vm.setGain(ch: index + 1, "hi")
                 }
             }
-            ToggleButton(label: "Pad", isOn: ch?.pad == true, onColor: .orange, height: 18) {
+            ToggleButton(label: "Pad", isOn: ch?.pad == true, onColor: .orange, offColor: ScarlettUI.labelOnStrip, height: 18) {
                 vm.setPad(ch: index + 1, !(ch?.pad ?? false))
             }
         }
@@ -133,7 +133,7 @@ struct ChannelStripView: View {
 
     private var pflButton: some View {
         HStack(spacing: 6) {
-            ToggleButton(label: "PFL", isOn: ch?.pfl == true, onColor: .green, font: .system(size: 10, weight: .semibold), controlSize: .mini, height: 16) {
+            ToggleButton(label: "PFL", isOn: ch?.pfl == true, onColor: .green, offColor: ScarlettUI.labelOnStrip, font: .system(size: 10, weight: .semibold), controlSize: .mini, height: 16) {
                 vm.toggleInputPfl(index)
             }
             Image(systemName: ch?.stereoLink == true ? "link" : "link.slash")
@@ -147,10 +147,10 @@ struct ChannelStripView: View {
 
     private var muteAndSolo: some View {
         HStack(spacing: 6) {
-            ToggleButton(label: "M", isOn: ch?.mute == true, onColor: .red, font: .system(size: 10, weight: .semibold), controlSize: .mini, minWidth: 22, height: 18) {
+            ToggleButton(label: "M", isOn: ch?.mute == true, onColor: .red, offColor: ScarlettUI.labelOnStrip, font: .system(size: 10, weight: .semibold), controlSize: .mini, minWidth: 22, height: 18) {
                 vm.toggleInputMute(index)
             }
-            ToggleButton(label: "S", isOn: ch?.solo == true, onColor: .yellow, font: .system(size: 10, weight: .semibold), controlSize: .mini, minWidth: 22, height: 18) {
+            ToggleButton(label: "S", isOn: ch?.solo == true, onColor: .yellow, offColor: ScarlettUI.labelOnStrip, font: .system(size: 10, weight: .semibold), controlSize: .mini, minWidth: 22, height: 18) {
                 vm.toggleInputSolo(index)
             }
         }

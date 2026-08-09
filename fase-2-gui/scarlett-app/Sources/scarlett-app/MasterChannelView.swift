@@ -41,7 +41,7 @@ struct MasterChannelView: View {
                 set: { vm.setMute($0) }
             )) { Text("M").font(ScarlettUI.title(9, .bold)) }
             .toggleStyle(.button)
-            .tint(vm.state.masterMute ? .red : ScarlettUI.off)
+            .tint(vm.state.masterMute ? .red : ScarlettUI.labelOnStrip)
             .controlSize(.mini)
 
             Button("Copy Mix To...") { onCopyMix() }
