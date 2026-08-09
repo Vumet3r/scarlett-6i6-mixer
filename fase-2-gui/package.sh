@@ -12,6 +12,7 @@ BIN="$ROOT/fase-2-gui/scarlett-app/.build/arm64-apple-macosx/debug/scarlett-app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/scarlett-app"
 cp "$ROOT/fase-1-daemon/build/scarlett-daemon" "$APP/Contents/Resources/scarlett-daemon"
+cp "$ROOT/fase-2-gui/assets/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,6 +24,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleName</key><string>Scarlett 6i6 Mixer</string>
     <key>CFBundleDisplayName</key><string>Scarlett 6i6 Mixer</string>
     <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundleShortVersionString</key><string>0.3</string>
     <key>CFBundleVersion</key><string>0.3</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
