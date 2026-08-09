@@ -9,6 +9,7 @@ enum ScarlettUI {
     static let secondaryText = Color.white.opacity(0.78)
 
     static let stripFill = Color.white.opacity(0.90)
+    static let labelOnStrip = Color(red: 0.08, green: 0.08, blue: 0.12)
     static let panelFill = Color(nsColor: .controlBackgroundColor)
     static let panelBackground = Color.black.opacity(0.22)
 

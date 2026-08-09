@@ -8,6 +8,7 @@ struct MasterChannelView: View {
         VStack(spacing: 3) {
             Text("Master")
                 .font(ScarlettUI.title(12))
+                .foregroundStyle(ScarlettUI.labelOnStrip)
                 .padding(.bottom, 4)
 
             Color.clear.frame(height: 42)
@@ -33,7 +34,7 @@ struct MasterChannelView: View {
 
             Text(ScarlettViewModel.volumeDBString(vm.state.masterVolume))
                 .font(ScarlettUI.mono(11))
-                .foregroundColor(.secondary)
+                .foregroundStyle(ScarlettUI.labelOnStrip)
 
             Toggle(isOn: Binding(
                 get: { vm.state.masterMute },
@@ -51,13 +52,13 @@ struct MasterChannelView: View {
 
             Text("Master")
                 .font(ScarlettUI.title(10))
-                .foregroundColor(.secondary)
+                .foregroundStyle(ScarlettUI.labelOnStrip)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 4)
-                .fill(ScarlettUI.panelFill)
+                .fill(ScarlettUI.stripFill)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(ScarlettUI.accent.opacity(0.65), lineWidth: 1.5))
         )
     }

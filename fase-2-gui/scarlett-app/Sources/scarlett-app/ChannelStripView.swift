@@ -16,6 +16,7 @@ struct ChannelStripView: View {
         VStack(spacing: 6) {
             Text(label)
                 .font(ScarlettUI.title(12))
+                .foregroundStyle(ScarlettUI.labelOnStrip)
                 .frame(maxWidth: .infinity)
 
             if showPreamp {
@@ -36,7 +37,7 @@ struct ChannelStripView: View {
 
             Text(label)
                 .font(ScarlettUI.title(10))
-                .foregroundColor(.secondary)
+                .foregroundStyle(ScarlettUI.labelOnStrip)
         }
         .frame(width: width)
         .padding(.horizontal, 6)
@@ -125,7 +126,7 @@ struct ChannelStripView: View {
     private var dBReadout: some View {
         Text(ScarlettViewModel.dBString(from: ch?.mixLevel ?? 0.75))
             .font(ScarlettUI.mono(11))
-            .foregroundColor(.secondary)
+            .foregroundStyle(ScarlettUI.labelOnStrip)
     }
 
     // MARK: - PFL + Link
