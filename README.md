@@ -12,7 +12,7 @@ This project reverse-engineers the 6i6 1st-gen USB control protocol on macOS and
 
 ## Download
 
-Grab the latest release from the [Releases page](https://github.com/Vumet3r/scarlett-6i6-mixer/releases) — `Scarlett-6i6-Mixer-v0.2.0-beta.zip`. No installers, no kernel drivers, no daemon setup: the app bundles everything it needs.
+Grab the latest release from the [Releases page](https://github.com/Vumet3r/scarlett-6i6-mixer/releases) — `Scarlett-6i6-Mixer-v0.2.1-beta.zip`. No installers, no kernel drivers, no daemon setup: the app bundles everything it needs.
 
 1. Download and unzip
 2. **Right-click the app → Open** (required on first launch: the app is not Apple-notarized, so Gatekeeper will ask for confirmation) and click Open again

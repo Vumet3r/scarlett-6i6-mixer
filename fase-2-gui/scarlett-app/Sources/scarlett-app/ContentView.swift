@@ -42,7 +42,7 @@ struct ContentView: View {
         .alert("Scarlett 6i6 Mixer", isPresented: $showSettings) {
             Button("OK") { }
         } message: {
-            Text("scarlett-app v0.2.0\nBuilt for Scarlett 6i6 1st Gen\n\nNative Mixer for macOS")
+            Text("scarlett-app v0.2.1\nBuilt for Scarlett 6i6 1st Gen\n\nNative Mixer for macOS")
         }
     }
 

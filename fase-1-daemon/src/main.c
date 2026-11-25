@@ -599,7 +599,7 @@ int main(void)
 {
 	struct sigaction sa;
 	pthread_t wd;
-	printf("scarlett-daemon v0.2.0\n");
+	printf("scarlett-daemon v0.2.1\n");
 
 	signal(SIGPIPE, SIG_IGN);
 
