@@ -121,6 +121,25 @@ scarlett_usb_close(scarlett_device_t *dev)
 }
 
 int
+scarlett_usb_reset(scarlett_device_t *dev)
+{
+	if (!dev) return -1;
+
+	@autoreleasepool {
+		IOUSBHostDevice *device = (__bridge IOUSBHostDevice *)dev->hostDevice;
+		NSError *error = nil;
+		BOOL ok = [device resetWithError:&error];
+		if (!ok) {
+			fprintf(stderr, "scarlett_usb_reset: %s\n",
+				error ? [[error localizedDescription] UTF8String] : "unknown");
+			return -1;
+		}
+		printf("scarlett_usb_reset: USB device reset succeeded\n");
+		return 0;
+	}
+}
+
+int
 scarlett_usb_control_transfer(
 	scarlett_device_t              *dev,
 	scarlett_usb_control_request_t *req)

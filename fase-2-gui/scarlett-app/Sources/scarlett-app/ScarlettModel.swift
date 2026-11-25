@@ -68,6 +68,7 @@ final class ScarlettViewModel: ObservableObject {
     private var pollTimer: Timer?
     private var retryTask: Task<Void, Never>?
     private var pollFailures = 0
+    private var preDimVolume: Float?
 
     /// Quick check: does the daemon accept connections right now?
     private func daemonAlive() async -> Bool {
@@ -351,20 +352,34 @@ final class ScarlettViewModel: ObservableObject {
 
     // MARK: - Master controls
 
-    func setVolume(_ dB: Int) {
-        guard isConnected else { return }
-        var s = state; s.masterVolume = Float(dB); state = s
+    private func applyMasterVolume(_ dB: Int) {
+        let clamped = max(-128, min(0, dB))
+        var s = state; s.masterVolume = Float(clamped); state = s
         Task { @MainActor in
-            do { try await asyncSet("volume", "\(dB)") }
+            do { try await asyncSet("volume", "\(clamped)") }
             catch { fputs("setVolume error: \(error)\n", stderr) }
         }
+    }
+
+    func setVolume(_ dB: Int) {
+        guard isConnected else { return }
+        if state.dim || preDimVolume != nil {
+            var s = state; s.dim = false; state = s
+            preDimVolume = nil
+        }
+        applyMasterVolume(dB)
     }
 
     func setMute(_ on: Bool) {
         guard isConnected else { return }
         var s = state; s.masterMute = on; state = s
         Task { @MainActor in
-            do { try await asyncSet("mute", on ? "on" : "off") }
+            do {
+                try await asyncSet("mute", on ? "on" : "off")
+                if !on && monitorSoloLeft != monitorSoloRight {
+                    syncMonitorChannelMutes()
+                }
+            }
             catch { fputs("setMute error: \(error)\n", stderr) }
         }
     }
@@ -403,10 +418,40 @@ final class ScarlettViewModel: ObservableObject {
 
     func toggleDim() {
         guard isConnected else { return }
-        var s = state; s.dim.toggle(); state = s
+        if !state.dim {
+            preDimVolume = state.masterVolume
+            var s = state; s.dim = true; state = s
+            let dimmed = max(-128, Int(state.masterVolume.rounded()) - 20)
+            applyMasterVolume(dimmed)
+        } else {
+            var s = state; s.dim = false; state = s
+            let restored = Int((preDimVolume ?? 0).rounded())
+            preDimVolume = nil
+            applyMasterVolume(restored)
+        }
+    }
+
+    func toggleMonitorSoloLeft() {
+        monitorSoloLeft.toggle()
+        syncMonitorChannelMutes()
+    }
+
+    func toggleMonitorSoloRight() {
+        monitorSoloRight.toggle()
+        syncMonitorChannelMutes()
+    }
+
+    private func syncMonitorChannelMutes() {
+        guard isConnected, !state.masterMute else { return }
+        let muteLeft = monitorSoloRight && !monitorSoloLeft
+        let muteRight = monitorSoloLeft && !monitorSoloRight
         Task { @MainActor in
-            do { try await asyncSet("dim", s.dim ? "on" : "off") }
-            catch { fputs("toggleDim error: \(error)\n", stderr) }
+            do {
+                try await asyncSet("mute:1", muteLeft ? "on" : "off")
+                try await asyncSet("mute:2", muteRight ? "on" : "off")
+            } catch {
+                fputs("syncMonitorChannelMutes error: \(error)\n", stderr)
+            }
         }
     }
 

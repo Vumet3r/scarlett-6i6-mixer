@@ -52,6 +52,15 @@ scarlett_device_t *scarlett_usb_open(uint16_t vid, uint16_t pid);
 void scarlett_usb_close(scarlett_device_t *dev);
 
 /**
+ * scarlett_usb_reset — Issue a USB bus reset on an opened device handle.
+ *
+ * @dev: device handle returned by scarlett_usb_open().
+ *
+ * Return: 0 on success, -1 on error.
+ */
+int scarlett_usb_reset(scarlett_device_t *dev);
+
+/**
  * scarlett_usb_control_transfer — Perform a USB control transfer.
  *
  * Wraps IOKit's USBDeviceSendControlRequest (or equivalent).

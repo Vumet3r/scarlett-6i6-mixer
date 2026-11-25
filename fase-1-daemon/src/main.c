@@ -26,6 +26,8 @@ static int g_matrix_gain_cache[144];
 static void handle_signal(int sig) { (void)sig; keep_running = 0; socket_server_stop(); }
 static int usb_write_cur(uint16_t wVal, uint16_t wIdx, void *data, uint16_t len);
 
+static void encode_scarlett_db(int dB, uint8_t d[2]);
+
 /* ---- Device lifecycle (watchdog-managed) ---- */
 
 static void enforce_safe_hardware_routing(void)
@@ -66,9 +68,8 @@ static void enforce_safe_hardware_routing(void)
 	g_matrix_gain_cache[57] = -12;
 
 	for (int i = 0; i < 144; i++) {
-		int dB = g_matrix_gain_cache[i];
-		int16_t v = (int16_t)(dB * 256);
-		uint8_t d[2] = { (uint8_t)(v & 0xff), (uint8_t)((v >> 8) & 0xff) };
+		uint8_t d[2];
+		encode_scarlett_db(g_matrix_gain_cache[i], d);
 		usb_write_cur(0x0000 | i, 0x3c00, d, 2);
 	}
 }
@@ -90,8 +91,10 @@ static void device_reset(void)
 {
 	if (!g_dev) return;
 	scarlett_usb_stop_interrupt();
+	scarlett_usb_reset(g_dev);
 	scarlett_usb_close(g_dev);
 	g_dev = NULL;
+	g_usb_failures = 0;
 }
 
 static void *watchdog_main(void *arg)
@@ -111,7 +114,6 @@ static void *watchdog_main(void *arg)
 			printf("scarlett-daemon: %d consecutive USB failures — resetting device\n",
 				g_usb_failures);
 			device_reset();
-			device_try_open();
 		}
 		pthread_mutex_unlock(&g_dev_lock);
 	}
@@ -166,6 +168,23 @@ static int usb_write_mem(uint16_t wVal, uint16_t wIdx, void *data, uint16_t len)
 }
 
 /* ---- value parsers / formatters ---- */
+
+/* Scarlett Gen 1 volume/gain registers encode dB as signed 16-bit Q8.8 LE. */
+static int decode_scarlett_db(const uint8_t d[2])
+{
+	int16_t raw = (int16_t)((uint16_t)d[0] | ((uint16_t)d[1] << 8));
+	int dB = raw / 256;
+	if (dB < -128) dB = -128;
+	if (dB > 6) dB = 6;
+	return dB;
+}
+
+static void encode_scarlett_db(int dB, uint8_t d[2])
+{
+	int16_t v = (int16_t)(dB * 256);
+	d[0] = (uint8_t)(v & 0xff);
+	d[1] = (uint8_t)((v >> 8) & 0xff);
+}
 
 static const char *str_onoff(int v) { return v ? "On" : "Off"; }
 static const char *str_line_hi(int v) { return v ? "Hi-Z" : "Line"; }
@@ -226,9 +245,10 @@ static int cmd_get_gain(char *r, size_t rs, int ch)
 
 static int cmd_get_volume(char *r, size_t rs, int bus)
 {
+	if (bus < 0 || bus > 6) return snprintf(r, rs, "ERR bus: 0..6"), -1;
 	uint8_t d[2] = {0};
 	if (usb_read_cur(0x0200 | bus, 0x0a00, d, 2)) goto e;
-	int dB = (int)d[0] - 128;
+	int dB = decode_scarlett_db(d);
 	snprintf(r, rs, "OK %d dB", dB);
 	return 0; e: snprintf(r, rs, "ERR ctl"); return -1;
 }
@@ -362,9 +382,10 @@ static int cmd_set_gain(char *r, size_t rs, int ch, const char *val)
 
 static int cmd_set_volume(char *r, size_t rs, int bus, int dB)
 {
+	if (bus < 0 || bus > 6) return snprintf(r, rs, "ERR bus: 0..6"), -1;
 	if (dB < -128 || dB > 0) return snprintf(r, rs, "ERR dB: -128..0"), -1;
-	uint8_t d[2] = {0};
-	d[0] = (uint8_t)(dB + 128);
+	uint8_t d[2];
+	encode_scarlett_db(dB, d);
 	if (usb_write_cur(0x0200 | bus, 0x0a00, d, 2)) goto e;
 	return snprintf(r, rs, "OK %d dB", dB), 0; e: snprintf(r, rs, "ERR ctl"); return -1;
 }
@@ -418,8 +439,8 @@ static int cmd_set_matrix_gain(char *r, size_t rs, int node, int dB)
 {
 	if (node < 0 || node >= 144) return snprintf(r, rs, "ERR node: 0..143"), -1;
 	if (dB < -128 || dB > 6) return snprintf(r, rs, "ERR dB: -128..6"), -1;
-	int16_t v = (int16_t)(dB * 256);
-	uint8_t d[2] = { (uint8_t)(v & 0xff), (uint8_t)((v >> 8) & 0xff) };
+	uint8_t d[2];
+	encode_scarlett_db(dB, d);
 	if (usb_write_cur(0x0000 | node, 0x3c00, d, 2)) goto e;
 	g_matrix_gain_cache[node] = dB;
 	return snprintf(r, rs, "OK %d dB", dB), 0; e: snprintf(r, rs, "ERR ctl"); return -1;
@@ -501,7 +522,7 @@ static void scarlett_response(const char *cmd, char *r, size_t rs)
 			pos += snprintf(buf+pos, sizeof(buf)-pos, " sync=%s",
 				d[0] ? "Locked" : "Unlocked");
 		if (!usb_read_cur(0x0200, 0x0a00, d, 2))
-			pos += snprintf(buf+pos, sizeof(buf)-pos, " vol=%ddB", (int)d[0]-128);
+			pos += snprintf(buf+pos, sizeof(buf)-pos, " vol=%ddB", decode_scarlett_db(d));
 		if (!usb_read_cur(0x0100, 0x0a00, d, 2))
 			pos += snprintf(buf+pos, sizeof(buf)-pos, " mute=%d", d[0]);
 		for (int ch = 1; ch <= 2; ch++) {
